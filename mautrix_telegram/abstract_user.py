@@ -626,30 +626,12 @@ class AbstractUser(ABC):
             pass
 
     async def delete_message(self, update: UpdateDeleteMessages) -> None:
-        if len(update.messages) > self.max_deletions:
-            return
-
-        for message_id in update.messages:
-            for message in await DBMessage.get_all_by_tgid(TelegramID(message_id), self.tgid):
-                if message.redacted:
-                    continue
-                await message.delete()
-                number_left = await DBMessage.count_spaces_by_mxid(message.mxid, message.mx_room)
-                if number_left == 0:
-                    await self._try_redact(message)
+        self.log.info(update)
+        return
 
     async def delete_channel_message(self, update: UpdateDeleteChannelMessages) -> None:
-        if len(update.messages) > self.max_deletions:
-            return
-
-        channel_id = TelegramID(update.channel_id)
-
-        for message_id in update.messages:
-            for message in await DBMessage.get_all_by_tgid(TelegramID(message_id), channel_id):
-                if message.redacted:
-                    continue
-                await message.delete()
-                await self._try_redact(message)
+        self.log.info(update)
+        return
 
     async def update_reactions(self, update: UpdateMessageReactions) -> None:
         portal = await po.Portal.get_by_entity(update.peer, tg_receiver=self.tgid)
